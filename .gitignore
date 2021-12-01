@@ -1,0 +1,6 @@
+download*/
+node_modules/
+screenshots/*
+.devcontainer/
+config.json
+.vscode/
