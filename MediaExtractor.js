@@ -160,8 +160,8 @@ export default class MediaExtractor extends Readable {
         await page.keyboard.type(password)
         await page.keyboard.press('Enter')
 
-        stat(path.join(this._prefix, username))
-            .catch(error => mkdir(path.join(this._prefix, username), { recursive: true }))
+        stat('./screenshots')
+            .catch(error => mkdir('./screenshots', { recursive: true }))
             .then(() => page.waitForResponse(response => /home\.json/.test(response.url())))
             .then(() => page.screenshot({ path: `./screenshots/${(++this._i).toString().padStart(4, '0')}.png` }))
             .then(() => this._debug && console.log('logged in'))

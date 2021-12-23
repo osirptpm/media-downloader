@@ -38,8 +38,10 @@ export default class Downloader extends Writable {
         this._pool = new WorkerPool(opt.maxConcurrency)
 
         this._progressBar = opt.progressBar
-        this._progress = this._progressBar && this._progressBar.getProgress()
-        this._progress.twIds = new Set()
+        if (this._progressBar) {
+            this._progress = this._progressBar.getProgress()
+            this._progress.twIds = new Set()
+        }
     }
 
     _write(chunk, encoding, callback) {
