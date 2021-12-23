@@ -1,6 +1,6 @@
 {
   "name": "tvd",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "twitter video downloader",
   "main": "index.js",
   "scripts": {
@@ -8,8 +8,8 @@
   },
   "author": "",
   "license": "ISC",
+  "type": "module",
   "dependencies": {
-    "puppeteer": "^10.2.0"
-  },
-  "type": "module"
+    "puppeteer": "^13.0.1"
+  }
 }

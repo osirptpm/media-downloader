@@ -40,61 +40,69 @@ export default class Downloader extends Writable {
         this._progressBar = opt.progressBar
         if (this._progressBar) {
             this._progress = this._progressBar.getProgress()
-            this._progress.twIds = new Set()
+            this._progress.mediaIds = new Set()
         }
     }
 
     _write(chunk, encoding, callback) {
         const work = () => {
             this._debug && console.log(chunk)
-            return new Promise((resolve, reject) => {
-                const { url, username, filename, twId } = chunk
-                // console.error({ url, username, filename, twId })
-                const req = request(url, response => {
-                    response.on('error', error => {
-                        // callback(null)
-                        if (this._progress) {
-                            this._progress.twIds.add(twId)
-                            this._progress.current = this._progress.twIds.size
-                        }
-                        resolve()
-                    })
-                    stat(path.join(this._prefix, username))
-                        .catch(error => mkdir(path.join(this._prefix, username), { recursive: true }))
-                        // .then(_stat => !_stat.isDirectory() && mkdir(path.join(this._prefix, username), { recursive: true }))
-                        .then(() => {
-                            const fileStream = createWriteStream(path.join(this._prefix, username, filename))
+            const { url, filename, mediaId } = chunk
+            const dirPath = path.dirname(path.join(this._prefix, filename))
+            const filePath = path.join(this._prefix, filename)
+
+            function _request(url) {
+                return new Promise((resolve, reject) => {
+                    const req = request(url, response => {
+                        response.on('error', error => {
+                            this._debug && console.error('response error', error)
+                            // callback(null)
+                            if (this._progress) {
+                                this._progress.mediaIds.add(mediaId)
+                                this._progress.current = this._progress.mediaIds.size
+                            }
+                            resolve()
+                        })
+                        if (response.statusCode >= 200 && response.statusCode <= 300) {
+                            const fileStream = createWriteStream(path.extname(filename) ? filePath : `${filePath}${path.extname(new URL(`http://${response.req.host}${response.req.path}`).pathname)}`)
                             fileStream.on('error', error => {
-                                console.log('fileStream error', chunk, response, error)
+                                this._debug && console.error('fileStream error', chunk, response, error)
                                 // callback(null)
                                 if (this._progress) {
-                                    this._progress.twIds.add(twId)
-                                    this._progress.current = this._progress.twIds.size
+                                    this._progress.mediaIds.add(mediaId)
+                                    this._progress.current = this._progress.mediaIds.size
                                 }
                                 resolve()
                             })
                             fileStream.on('close', () => {
                                 // callback(null)
                                 if (this._progress) {
-                                    this._progress.twIds.add(twId)
-                                    this._progress.current = this._progress.twIds.size
+                                    this._progress.mediaIds.add(mediaId)
+                                    this._progress.current = this._progress.mediaIds.size
                                 }
                                 resolve()
                             })
                             response.pipe(fileStream)
-                        })
+                        } else if (response.headers.location) {
+                            resolve(_request.call(this, response.headers.location))
+                        } else resolve()
+                    })
+                    req.on('error', error => {
+                        this._debug && console.error('request error', chunk, error)
+                        // callback(null)
+                        if (this._progress) {
+                            this._progress.mediaIds.add(mediaId)
+                            this._progress.current = this._progress.mediaIds.size
+                        }
+                        resolve()
+                    })
+                    req.end()
                 })
-                req.on('error', error => {
-                    console.log('request error', chunk, error)
-                    // callback(null)
-                    if (this._progress) {
-                        this._progress.twIds.add(twId)
-                        this._progress.current = this._progress.twIds.size
-                    }
-                    resolve()
-                })
-                req.end()
-            })
+            }
+
+            return stat(dirPath)
+                .catch(error => mkdir(dirPath, { recursive: true }))
+                .then(() => _request.call(this, url))
         }
         this._pool.addWork(work)
         callback(null)
