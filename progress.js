@@ -61,7 +61,7 @@ export function getProgressBar(progress = { current: 0, total: 100 }, info = 'Pr
 }
 
 function setPad(str, placeholder, fillString = ' ') {
-    const width = process.stdout.columns
+    const width = process.stdout.columns || 100
     const padCount = width - str.length + placeholder.pad.length
     switch (true) {
         case padCount >= 0: return str.replace(placeholder.pad, fillString.repeat(padCount))

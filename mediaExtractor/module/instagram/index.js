@@ -57,35 +57,39 @@ class InstagramMediaExtractor extends AbstractMediaExtractor {
             this._debug && console.log(data)
             _push(data)
         }
-        const username = (new URL(extractInfo.url).pathname).replace('/', '')
+        const username = (new URL(extractInfo.url).pathname).replace(/\//g, '')
         let articleCount = null
         page.on('console', (msg) => this._debug && console.log('PAGE LOG:', msg.text()))
         page.on('response', response => {
-
-            if (/www\.instagram\.com\/jiwonstein\/$/.test(response.request().url())) {
-                this._debug && console.log(response.request().url())
-                response.text().then(text => {
-                    const matched = text.match(/window\._sharedData = (\{.*\})/)
-                    if (matched) {
-                        const _sharedData = JSON.parse(matched[1])
-                        const edges = _sharedData?.entry_data?.ProfilePage[0]?.graphql?.user?.edge_owner_to_timeline_media?.edges
-                        edges && getMedia(edges)
-                    }
-                })
-            }
-
-            if (/graphql\/query/i.test(response.request().url())) {
-                this._debug && console.log(response.request().url())
-                response.json().then(json => {
-                    if (!articleCount) {
-                        articleCount = json.data.user.edge_owner_to_timeline_media.count, this.printProgress(articleCount)
-                    }
-
-                    const edges = json.data?.user?.edge_owner_to_timeline_media?.edges
-                    edges && getMedia(edges)
-
-
-                })
+            const status = response.status()
+            if (status < 300 && status >= 200) {
+                if ((new RegExp(`www\\.instagram\\.com\\/${username}\\/$`)).test(response.request().url())) {
+                    this._debug && console.log(response.request().url())
+                    response.text().then(text => {
+                        const matched = text.match(/window\._sharedData = (\{.*\})/)
+                        if (matched) {
+                            const _sharedData = JSON.parse(matched[1])
+                            const edges = _sharedData?.entry_data?.ProfilePage[0]?.graphql?.user?.edge_owner_to_timeline_media?.edges
+                            if (!articleCount) {
+                                articleCount = _sharedData?.entry_data?.ProfilePage[0]?.graphql?.user?.edge_owner_to_timeline_media?.count
+                                articleCount && this.printProgress(articleCount)
+                            }
+                            edges && getMedia(edges)
+                        }
+                    })
+                }
+    
+                if (/graphql\/query/i.test(response.request().url())) {
+                    this._debug && console.log(response.request().url())
+                    response.json().then(json => {
+                        if (!articleCount) {
+                            articleCount = json.data?.user?.edge_owner_to_timeline_media?.count
+                            articleCount && this.printProgress(articleCount)
+                        }
+                        const edges = json.data?.user?.edge_owner_to_timeline_media?.edges
+                        edges && getMedia(edges)    
+                    })
+                }
             }
         })
         await page.setViewport({
@@ -105,7 +109,8 @@ class InstagramMediaExtractor extends AbstractMediaExtractor {
                 } else {
                     // images
                     if (node.edge_sidecar_to_children) {
-                        getMedia(node.edge_sidecar_to_children.edges, node.id, new Date(node.taken_at_timestamp * 1000))
+                        const _createAt = new Date(node.taken_at_timestamp * 1000)
+                        getMedia(node.edge_sidecar_to_children.edges, node.id, _createAt)
                     } else {
                         if (node.display_resources) {
                             let max = -1, maxIndex = 0
@@ -122,7 +127,8 @@ class InstagramMediaExtractor extends AbstractMediaExtractor {
                 }
                 if (_node) {
                     const _createAt = createAt ? createAt : (_node.taken_at_timestamp ? new Date(_node.taken_at_timestamp * 1000) : null)
-                    push({ url, filename: generateFilename(id ? id : _node.id, _createAt, url, username), mediaId: id ? id : _node.id })
+                    const _id = id ? id : _node.id
+                    push({ url, filename: generateFilename(_id, _createAt, url, username), mediaId: _id })
                 }
             })
         }
