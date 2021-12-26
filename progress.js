@@ -9,7 +9,7 @@ const CONST = {
 }
 export function getProgressBar(progress = { current: 0, total: 100 }, info = 'Progressing ', placeholder = { current: ':current', total: ':total', pad: ':pad' }) {
     info = info + ':current:padToatal: :total'
-    let bar = `${CONST.PROGRESS.START}:pad${CONST.PROGRESS.END}`
+    let bar = `${CONST.PROGRESS.START}:pad${CONST.PROGRESS.END}`, isFirst = true
 
     const progressBar = {
         print(_progress) {
@@ -52,9 +52,11 @@ export function getProgressBar(progress = { current: 0, total: 100 }, info = 'Pr
         _info = setPad(_info, placeholder)
         let _bar = setPad(bar, placeholder)
         _bar = setProgress(_bar, progress)
+        isFirst && (isFirst = false, process.stdout.write('\r\n\r\n'))
+        process.stdout.write('\u001B[2F')
         process.stdout.write(`${_info}\r\n`)
         process.stdout.write(`${_bar}\r\n`)
-        process.stdout.write(progress.current === progress.total ? '\r\n' : '\u001B[2F')
+        // process.stdout.write(progress.current === progress.total ? '\r\n' : '\u001B[2F')
     }
 }
 

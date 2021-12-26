@@ -1,7 +1,7 @@
 {
-  "name": "tvd",
-  "version": "1.1.0",
-  "description": "twitter video downloader",
+  "name": "media-donwloader",
+  "version": "1.1.1",
+  "description": "Download media using puppeteer",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

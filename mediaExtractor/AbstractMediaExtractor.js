@@ -162,11 +162,14 @@ class AbstractMediaExtractor extends Readable {
         await page.focus(loginInfo.id.selector)
         await page.keyboard.type(loginInfo.id.value)
         loginInfo.isSplitLogin && await page.keyboard.press('Enter')
+        await this.screenshot(page)
         await page.waitForSelector(loginInfo.password.selector)
         await page.focus(loginInfo.password.selector)
         await page.keyboard.type(loginInfo.password.value)
         await page.keyboard.press('Enter')
-        await page.waitForNetworkIdle()
+        await this.screenshot(page)
+        await page.waitForNetworkIdle().catch((error) => {})
+        await this.screenshot(page)
         return page
     }
 

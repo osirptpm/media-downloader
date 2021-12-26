@@ -13,16 +13,16 @@ async function run() {
         maxConcurrency: 10,
         downloadDir: './downloads',
         debug: false,
-        progressBar: progressBar,
+        progressBar,
     })
     const mediaExtractor = await getMediaExtractor(
-        'twitter',
+        'instagram',
         {
             debug: false,
             progressBar
         })
 
-    const url = `https://twitter.com/${process.argv[2]}/media`
+    const url = `https://instagram.com/${process.argv[2]}/`
 
     mediaExtractor.pipe(downloader)
     mediaExtractor.run({
