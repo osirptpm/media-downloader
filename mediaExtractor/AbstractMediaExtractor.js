@@ -126,6 +126,7 @@ class AbstractMediaExtractor extends Readable {
                         else count = 0
                         
                         await page.mouse.wheel({ deltaY: totalHeight })
+                        // await this.screenshot(page)
                         // console.log({old, totalHeight, count})
                         old = totalHeight
                         scrollDown.call(this)
@@ -158,6 +159,7 @@ class AbstractMediaExtractor extends Readable {
         const page = await browser.newPage()
 
         await page.goto(loginInfo.url, { 'waitUntil': 'load' })
+        await this.screenshot(page)
         await page.waitForSelector(loginInfo.id.selector)
         await page.focus(loginInfo.id.selector)
         await page.keyboard.type(loginInfo.id.value)

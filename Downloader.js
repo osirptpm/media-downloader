@@ -2,7 +2,8 @@ import path from 'path'
 import { Writable } from 'stream'
 import { createWriteStream } from "fs"
 import { stat, mkdir } from "fs/promises"
-import { request } from 'https'
+import { request as httpsRequest } from 'https'
+import { request as httpRequest } from 'http'
 
 class WorkerPool {
     constructor(maxPoolSize) {
@@ -53,7 +54,8 @@ export default class Downloader extends Writable {
 
             function _request(url) {
                 return new Promise((resolve, reject) => {
-                    const req = request(url, response => {
+                    const __request = new URL(url).protocol === 'http:' ? httpRequest : httpsRequest
+                    const req = __request(url, response => {
                         response.on('error', error => {
                             this._debug && console.error('response error', error)
                             // callback(null)
