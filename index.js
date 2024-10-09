@@ -16,13 +16,13 @@ async function run() {
         progressBar,
     })
     const mediaExtractor = await getMediaExtractor(
-        'instagram',
+        'twitter',
         {
             debug: false,
             progressBar
         })
 
-    const url = `https://instagram.com/${process.argv[2]}/`
+    const url = `https://x.com/${process.argv[2]}/`
 
     mediaExtractor.pipe(downloader)
     mediaExtractor.run({
@@ -34,4 +34,4 @@ async function run() {
         })
 }
 
-run().catch(console.error)
+// run().catch(console.error)
