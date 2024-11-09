@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const config = require("./config.json");
 
 
-async function run() {
+export async function run(userId) {
     const progressBar = getProgressBar(undefined, 'Downloading ')
     const downloader = new Downloader({
         maxConcurrency: 10,
@@ -22,7 +22,7 @@ async function run() {
             progressBar
         })
 
-    const url = `https://x.com/${process.argv[2]}/`
+    const url = `https://x.com/${userId}/`
 
     mediaExtractor.pipe(downloader)
     mediaExtractor.run({

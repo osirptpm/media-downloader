@@ -1,8 +1,9 @@
 // main.js
 
 // Modules to control application life and create native browser window
-const { app, BrowserWindow } = require('electron')
-const path = require('node:path')
+import { app, BrowserWindow } from 'electron'
+import path from 'node:path'
+const __dirname = import.meta.dirname
 
 const createWindow = () => {
   // Create the browser window.
@@ -15,7 +16,7 @@ const createWindow = () => {
   })
 
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  mainWindow.loadFile(path.join(__dirname, '..', 'frontend', 'index.html'))
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
